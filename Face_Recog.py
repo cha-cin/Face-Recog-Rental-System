@@ -3,13 +3,18 @@
 import cv2 #For Image processing 
 import numpy as np #For converting Images to Numerical array 
 import os #To handle directories 
-from PIL import Image #Pillow lib for handling images 
+from PIL import Image #Pillow lib for handling images
+import socketio
+import json
+sio = socketio.Client()
+sio.connect('http://140.115.87.73:3000/')
 
-labels = ["Aswinth", "Elon Musk"] 
+labels = ["Elen", "Jush"] 
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-recognizer = cv2.createLBPHFaceRecognizer()
-recognizer.load("face-trainner.yml")
+#recognizer = cv2.createLBPHFaceRecognizer()
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+recognizer.read("face-trainner.yml")
 
 cap = cv2.VideoCapture(0) #Get vidoe feed from the Camera
 
@@ -19,21 +24,31 @@ while(True):
     gray  = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #convert Video frame to Greyscale
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=5) #Recog. faces
     for (x, y, w, h) in faces:
-    	roi_gray = gray[y:y+h, x:x+w] #Convert Face to greyscale 
+        roi_gray = gray[y:y+h, x:x+w] #Convert Face to greyscale 
 
-    	id_, conf = recognizer.predict(roi_gray) #recognize the Face
+        id_, conf = recognizer.predict(roi_gray) #recognize the Face
     
-    	if conf>=80:
-    		font = cv2.FONT_HERSHEY_SIMPLEX #Font style for the name 
-    		name = labels[id_] #Get the name from the List using ID number 
-    		cv2.putText(img, name, (x,y), font, 1, (0,0,255), 2)
-    	
-    	cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+        if conf>=50:
+                font = cv2.FONT_HERSHEY_SIMPLEX #Font style for the name 
+                name = labels[id_] #Get the name from the List using ID number 
+                cv2.putText(img, name, (x,y), font, 1, (0,0,255), 2)
+                data = {
+                    'is_accept': 'true'
+                }
+                sio.emit('face_recog', data)
+        else:
+                data = {
+                    'is_accept': 'false'
+                }
+                sio.emit('face_recog', data)
+        
+        cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
 
     cv2.imshow('Preview',img) #Display the Video
     if cv2.waitKey(20) & 0xFF == ord('q'):
-    	break
+        break
 
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
+
