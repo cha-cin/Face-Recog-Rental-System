@@ -7,6 +7,8 @@ from flask import render_template
 import json
 from datetime import datetime, timedelta
 import pytz
+import time
+
 tz = pytz.timezone('Asia/Taipei')
 
 app = Flask(__name__)
@@ -15,24 +17,33 @@ app = Flask(__name__)
 socket = SocketIO(app)
 authority = {}
 face_Recog = False
-
+author = False
 @socket.on('face_recog')
 def text(data):
-    for i in data:
-        face_Recog = i
-        
+    global author
+    face_Recog = data
+    print(face_Recog)
+    if face_Recog == "true" and author == True:
+        emit('micro_servo_client', face_Recog, broadcast=True)
 
 def check_authority(authority):
     #return str(taiwan_now) + str(star_time)
     taiwan_now = datetime.now(tz)
+    global author
     #clear the timezone
     taiwan_now = taiwan_now.replace(tzinfo=None)
     if len(authority)>=1:
-        if taiwan_now - authority['end_time'] >= timedelta(seconds=2):
+        
+        if  authority['end_time'] - taiwan_now > timedelta(seconds=2):
+            author = True
             return "ok! you can use it"
         else:
-            return "someone use it"
+            author = False
+            return "timeout"
+        
+        #return str(taiwan_now)+str(authority['end_time'])
     else:
+        author = False
         return "you don't have authority maybe you have to apply"
 
 @app.route('/', methods=['GET', 'POST'])
@@ -49,12 +60,9 @@ def submit():
         star_time = datetime.strptime(star_time, "%Y-%m-%dT%H:%M")
         end_time = datetime.strptime(end_time, "%Y-%m-%dT%H:%M")
         full_name = request.form.get('full_name')
-        if face_Recog is True:
-            authority['full_name'] = full_name
-            authority['star_time'] = star_time
-            authority['end_time'] = end_time
-        else:
-            authority = {}
+        authority['full_name'] = full_name
+        authority['star_time'] = star_time
+        authority['end_time'] = end_time
         
         return check_authority(authority)
     elif request.method == 'GET':
@@ -67,4 +75,4 @@ def static_files(path):
     return app.send_static_file(path)
 
 if __name__ == '__main__':
-    socket.run(app, debug=True, host='140.115.87.73', port ='3000')
+    socket.run(app, debug=True, host='127.0.0.1', port ='3000')
