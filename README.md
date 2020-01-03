@@ -1,7 +1,9 @@
 ###### tags: `物聯網`
 # 人臉辨識之租借系統教學
 
-## 1、**臉部辨識**
+## 前提!! 請安裝好 Raspberry pi Linux環境 ##
+[此為安裝教學連結](https://drive.google.com/file/d/1VUlZtWC8SswSpZoP-LXKf7S2FR2fCVGy/view?usp=sharing)
+## 1、**臉部辨識套件安裝**
 * Dlib是用於現實世界機器學習和數據分析應用程序的工具包。要安裝dlib，只需在終端中輸入以下命令
 ```
             sudo pip install dlib
@@ -17,7 +19,7 @@
 ### 1-1建立臉孔輪廓圖片集目錄
 ![](https://i.imgur.com/csAXry4.png)
 * 上突為專案裡面的Face_Images資料夾應該包含(姓名)子目錄，這些子目錄具有應被識別的人的名字，並且其中包含其的圖片。在此專案我用自己的圖像作為例子。(**每個人名至少需要5張照片**)
-### 1-2Face Trainer Program
+### 1-2 Face Trainer Program 訓練臉部模型
 * 讓我們看一下Face_Traineer.py程序。該程序的目的是打開Face_Images目錄中的所有圖像並蒐索面部。一旦檢測到面部，它將裁剪面部並將其轉換為灰階，然後轉換為numpy數組。然後我們最終使用我們之前安裝的face_recognition進行訓練並將其保存為名為face- trainner.yml的模型。此模型中的數據以後可以用於識別面部。最後給出了完整的Trainer程序。
 * 我們通過導入所需的openCV(cv2)開始該程序。cv2模塊用於圖像處理，numpy用於將圖像轉換為數學表達式，os模塊用於在目錄中導航，而PIL用於處理圖像。
     ```
@@ -69,22 +71,68 @@
     ```
 * 編譯該程序時，您會發現face-trainner.yml文件每次都會更新。因此，無論何時對Face_Images目錄中的照片進行任何更改，請確保都編譯該程序。編譯後，您將獲得如下所示的人臉ID，路徑名，人名和numpy數組，用於調試目的。
 ![](https://i.imgur.com/Ygtt5gF.png)
-### 1-3 Face Recog Program
-* 訓練完成之後可以開啟Face_Recog開始進行測試。下圖為範例:
+### 1-3 Face Recog Program 就可以開始辨識啦!
 
-(..............................待補充)
-* 且需要安裝 python socketio 作為伺服器與客戶端溝通的橋樑。
+
+
+
+### 1-4 租借時間申請網站架構
 1. 伺服器(flask)端socket安裝
+* 我選擇安裝 python socketio 作為伺服器與客戶端溝通的橋樑。
 ```
 pip3 install socket
 ```
+* 伺服器端原始碼在 app.py 
+
 2. 客戶端安裝
 ```
 pip3 install "python-socketio[client]" 
 ```
+* 客戶端原始碼在 Client_text.py & Face_Recoge.py
 
-### 2-1 NodeMcu & Micro Servo開鎖裝置安裝
+### 2-1 NodeMcu & Micro Servo開鎖裝置安裝(後來無法配合專案使用，可略過)
 
 * 我們要使用NodeMcu 連接 客戶端Micro Servo 使其可以連接上網路與伺服器溝通。
 * 教學網址:
 https://hackmd.io/N1c6-vp3QEexJNSqv63Keg
+
+### 2-2 Micro Servo 馬達控制
+
+* 範例檔:
+其中 我用了GPIO 17作為訊號輸出腳位。
+* 角度控制: 其中 **ChangeDutyCycle** 就是python 用來控制馬達角度的方法。
+* 記住!!! **頻率很重要**
+![](https://i.imgur.com/14zyBwl.png)
+參考網站:
+https://blog.everlearn.tw/%E7%95%B6-python-%E9%81%87%E4%B8%8A-raspberry-pi/raspberry-pi-3-mobel-3-%E5%88%A9%E7%94%A8-pwm-%E6%8E%A7%E5%88%B6%E4%BC%BA%E6%9C%8D%E9%A6%AC%E9%81%94
+
+* 此為範例檔，可以先用來測試馬達能否驅動。
+```
+servoPIN = 17
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(servoPIN, GPIO.OUT)
+
+
+p = GPIO.PWM(servoPIN, 50) # GPIO 17 for PWM with 50Hz
+
+def control_micro_servo(data):
+    global p
+    print(data)
+    print(type(data))
+    if data == "true":
+        print("hello")
+        p.start(2.5) # Initialization
+    try:
+        p.ChangeDutyCycle(5)
+        time.sleep(0.5)
+        p.ChangeDutyCycle(6.25)
+        time.sleep(0.5)
+        p.ChangeDutyCycle(7.5)
+    except KeyboardInterrupt:
+        p.stop()
+        GPIO.cleanup()
+        #GPIO.cleanup()
+```
+### 專案程式說明:
+https://hackmd.io/1SQFnjzITIenGYr4Go2nKw
+
