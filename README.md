@@ -1,5 +1,8 @@
 ###### tags: `物聯網`
 # 人臉辨識之租借系統教學
+# 專案影片範例網址
+[點擊這裡~](https://youtu.be/4ala2vWL9F4)
+
 
 ## 前提!! 請安裝好 Raspberry pi Linux環境 ##
 [此為安裝教學連結](https://drive.google.com/file/d/1VUlZtWC8SswSpZoP-LXKf7S2FR2fCVGy/view?usp=sharing)
