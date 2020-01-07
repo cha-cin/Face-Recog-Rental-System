@@ -1,6 +1,7 @@
 ###### tags: `物聯網`
-# 人臉辨識之租借系統教學
-# 專案影片範例網址
+# 依靠臉部辨識身分之租借系統教學
+
+## 專案影片範例網址
 [點擊這裡~](https://youtu.be/4ala2vWL9F4)
 
 
@@ -74,9 +75,12 @@
     ```
 * 編譯該程序時，您會發現face-trainner.yml文件每次都會更新。因此，無論何時對Face_Images目錄中的照片進行任何更改，請確保都編譯該程序。編譯後，您將獲得如下所示的人臉ID，路徑名，人名和numpy數組，用於調試目的。
 ![](https://i.imgur.com/Ygtt5gF.png)
+### 訓練完成後會有一個 face-trainner.yml 的 model啦!
+![](https://i.imgur.com/biRTzUU.png)
+
 ### 1-3 Face Recog Program 就可以開始辨識啦!
 
-
+* 可以在下面的 Code 說明裡面了解辨識方法
 
 
 ### 1-4 租借時間申請網站架構
@@ -136,6 +140,6 @@ def control_micro_servo(data):
         GPIO.cleanup()
         #GPIO.cleanup()
 ```
-### 專案程式說明:
+# 本專案程式說明:
 https://hackmd.io/1SQFnjzITIenGYr4Go2nKw
 
